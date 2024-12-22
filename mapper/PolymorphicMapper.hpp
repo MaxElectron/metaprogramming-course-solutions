@@ -26,14 +26,7 @@ struct PolymorphicMapper<Base, Target, Mapping<Derived, mappedValue>, RemainingM
         static_assert(std::is_base_of_v<Base, Derived>);
         if (dynamic_cast<const Derived*>(std::addressof(instance)) != nullptr)
         {
-            if constexpr (std::is_same_v<Target, std::remove_cv_t<decltype(mappedValue)>>)
-            {
-                return { mappedValue };
-            }
-            else
-            {
-                return std::nullopt;
-            }
+            return { mappedValue };
         }
         else
         {
