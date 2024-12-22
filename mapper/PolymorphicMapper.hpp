@@ -20,17 +20,23 @@ struct PolymorphicMapper {
 };
 
 template <class Base, class Target, class Derived, auto mappedValue, class... RemainingMappings>
-requires std::is_base_of_v<Base, Derived>
 struct MapperImpl<Base, Target, Mapping<Derived, mappedValue>, RemainingMappings...> {
+    static_assert(std::is_base_of_v<Base, Derived>);
+    
   static std::optional<Target> processMapping(const Base& instance) {
-    if (dynamic_cast<const Derived*>(std::addressof(instance)) != nullptr) {
-      return {mappedValue};
-    } else {
-      if constexpr (sizeof...(RemainingMappings) > 0) {
-        return MapperImpl<Base, Target, RemainingMappings...>::processMapping(instance);
-      } else {
+    if constexpr (std::is_same_v<std::remove_cv_t<decltype(mappedValue)>, Target>) {
+          if (dynamic_cast<const Derived*>(std::addressof(instance)) != nullptr) {
+            return {mappedValue};
+          } else {
+            if constexpr (sizeof...(RemainingMappings) > 0) {
+              return MapperImpl<Base, Target, RemainingMappings...>::processMapping(instance);
+            } else {
+              return std::nullopt;
+            }
+        }
+    }
+    else {
         return std::nullopt;
-      }
     }
   }
 };
