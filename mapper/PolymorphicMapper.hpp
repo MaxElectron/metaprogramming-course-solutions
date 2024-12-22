@@ -43,10 +43,11 @@ struct MapperImpl<Base, Target, Mapping<Derived, mappedValue>,
 };
 
 template <class Base, class Target, class Head, class... Tail>
+requires (!std::is_same_v<Head, Mapping<typename Head::From, Head::mapped_value>>)
 struct MapperImpl<Base, Target, Head, Tail...> {
-  static std::optional<WrappedType<Target>> map(const Base &instance) {
-    return MapperImpl<Base, Target, Tail...>::map(instance);
-  }
+    static std::optional<WrappedType<Target>> map(const Base& instance) {
+        return MapperImpl<Base, Target, Tail...>::map(instance);
+    }
 };
 
 template <class Base, class Target, class Derived, auto mappedValue,
