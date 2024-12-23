@@ -1,7 +1,6 @@
 #pragma once
 
 #include <optional>
-#include <type_traits>
 
 template <class Source, auto value> struct Mapping {
   using TargetType = decltype(value);
@@ -33,8 +32,7 @@ template <class Base, class Target, class Derived, auto mappedValue,
 struct MapperImpl<Base, Target, Mapping<Derived, mappedValue>,
                   RemainingMappings...> {
   static std::optional<WrappedType<Target>> map(const Base &instance) {
-    if (std::is_base_of_v<Base, Derived> &&
-        dynamic_cast<const Derived *>(std::addressof(instance)) != nullptr) {
+    if (dynamic_cast<const Derived *>(std::addressof(instance))) {
       return {mappedValue};
     } else {
       return MapperImpl<Base, Target, RemainingMappings...>::map(instance);
@@ -44,7 +42,6 @@ struct MapperImpl<Base, Target, Mapping<Derived, mappedValue>,
 
 template <class Base, class Target, class Derived, auto mappedValue,
           class... RemainingMappings>
-  requires std::is_base_of_v<Base, Derived>
 struct PolymorphicMapper<Base, Target, Mapping<Derived, mappedValue>,
                          RemainingMappings...> {
   static std::optional<Target> map(const Base &instance) {
