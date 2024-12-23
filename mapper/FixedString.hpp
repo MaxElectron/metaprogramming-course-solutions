@@ -5,13 +5,12 @@
 #include <string_view>
 
 template <size_t max_len> struct FixedString {
-  std::array<char, max_len + 1> data;
+  std::array<char, max_len + 1> data{};
   size_t length;
 
   constexpr FixedString(const char *input_str, size_t input_len) noexcept
-      : data{}, length(input_len) {
+      : length(input_len) {
     std::ranges::copy(input_str, input_str + input_len, data.begin());
-    data[input_len] = '\0';
   }
 
   constexpr operator std::string_view() const noexcept {
@@ -20,6 +19,6 @@ template <size_t max_len> struct FixedString {
 };
 
 constexpr FixedString<256> operator"" _cstr(const char *literal_str,
-                                            size_t literal_len) {
+                                            size_t literal_len) noexcept {
   return FixedString<256>(literal_str, literal_len);
 }
