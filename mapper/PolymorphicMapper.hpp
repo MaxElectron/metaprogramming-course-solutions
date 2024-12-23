@@ -7,22 +7,19 @@ template <class Source, auto value> struct Mapping {
   static constexpr auto mapped_value = value;
 };
 
-template <class T> struct TypeWrapper {
-  using type = T;
-};
-template <class T> using WrappedType = typename TypeWrapper<T>::type;
-
 template <class Base, class Target, class... MapEntries>
 struct PolymorphicMapper;
 
-template <class Base, class Target> struct PolymorphicMapper<Base, Target> {
-  static std::optional<Target> map(const Base &) { return std::nullopt; }
+template <class Base, class Target>
+struct PolymorphicMapper<Base, Target> {
+  static std::optional<Target> map(const Base&) { return std::nullopt; }
 };
 
 template <class Base, class Target, class... MapEntries> struct MapperImpl;
 
-template <class Base, class Target> struct MapperImpl<Base, Target> {
-  static std::optional<WrappedType<Target>> map(const Base &) {
+template <class Base, class Target>
+struct MapperImpl<Base, Target> {
+  static std::optional<Target> map(const Base&) {
     return PolymorphicMapper<Base, Target>::map({});
   }
 };
@@ -31,8 +28,8 @@ template <class Base, class Target, class Derived, auto mappedValue,
           class... RemainingMappings>
 struct MapperImpl<Base, Target, Mapping<Derived, mappedValue>,
                   RemainingMappings...> {
-  static std::optional<WrappedType<Target>> map(const Base &instance) {
-    if (dynamic_cast<const Derived *>(std::addressof(instance))) {
+  static std::optional<Target> map(const Base& instance) {
+    if (dynamic_cast<const Derived*>(std::addressof(instance))) {
       return {mappedValue};
     } else {
       return MapperImpl<Base, Target, RemainingMappings...>::map(instance);
