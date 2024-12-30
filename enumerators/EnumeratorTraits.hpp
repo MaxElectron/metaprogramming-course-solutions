@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <string_view>
 
-template <typename Enum, std::size_t MaxRange = 512>
+template <typename Enum, long long MaxRange = 512>
   requires std::is_enum_v<Enum>
 struct EnumeratorTraits {
 private:
@@ -14,7 +14,7 @@ private:
       std::numeric_limits<UnderlyingType>::max());
   static constexpr auto lowerBound_ =
       std::numeric_limits<UnderlyingType>::min();
-  static constexpr std::size_t rangeSize_ =
+  static constexpr long long rangeSize_ =
       std::min(upperBound_, static_cast<unsigned long long>(MaxRange));
 
   static constexpr long long signedLowerBound_ = [] {
@@ -43,7 +43,7 @@ private:
     template <typename E, long long Idx>
     static consteval std::string_view extractName() {
       std::string_view str = valueFunc<idxToValue<E, Idx>()>();
-      std::size_t pos = str.rfind('=') + 2;
+      long long pos = str.rfind('=') + 2;
       str = str.substr(pos, str.size() - pos - 1);
       pos = str.find_last_of(':') + 1;
       if (pos != std::string_view::npos) {
@@ -53,10 +53,10 @@ private:
     }
   };
 
-  static consteval std::size_t computeEnumSize() {
-    std::size_t count = 0;
+  static consteval long long computeEnumSize() {
+    long long count = 0;
     if constexpr (std::is_signed_v<UnderlyingType> && signedLowerBound_ < 0) {
-      [&count]<std::size_t... Idx>(std::integer_sequence<std::size_t, Idx...>) {
+      [&count]<long long... Idx>(std::integer_sequence<long long, Idx...>) {
         (
             [&count]() {
               if (EnumR::template isValidIndex<EnumType,
@@ -66,10 +66,10 @@ private:
               }
             }(),
             ...);
-      }(std::make_integer_sequence<std::size_t, static_cast<std::size_t>(
+      }(std::make_integer_sequence<long long, static_cast<long long>(
                                                     -signedLowerBound_)>());
     }
-    [&count]<std::size_t... Idx>(std::integer_sequence<std::size_t, Idx...>) {
+    [&count]<long long... Idx>(std::integer_sequence<long long, Idx...>) {
       (
           [&count]() {
             if (EnumR::template isValidIndex<EnumType,
@@ -78,19 +78,19 @@ private:
             }
           }(),
           ...);
-    }(std::make_integer_sequence<std::size_t, rangeSize_ + 1>());
+    }(std::make_integer_sequence<long long, rangeSize_ + 1>());
     return count;
   }
 
   template <auto Func> static consteval auto computeEnumData() {
-    constexpr std::size_t enumSize_ = computeEnumSize();
+    constexpr long long enumSize_ = computeEnumSize();
     std::array<decltype(Func.template operator()<EnumType, 0>()), enumSize_>
         storage {};
-    std::size_t idx = 0;
+    long long idx = 0;
 
     if constexpr (std::is_signed_v<UnderlyingType> && signedLowerBound_ < 0) {
       [&storage,
-       &idx]<std::size_t... I>(std::integer_sequence<std::size_t, I...>) {
+       &idx]<long long... I>(std::integer_sequence<long long, I...>) {
         (
             [&storage, &idx]() {
               if (EnumR::template isValidIndex<EnumType,
@@ -101,12 +101,12 @@ private:
               }
             }(),
             ...);
-      }(std::make_integer_sequence<std::size_t, static_cast<std::size_t>(
+      }(std::make_integer_sequence<long long, static_cast<long long>(
                                                     -signedLowerBound_)>());
     }
 
     [&storage,
-     &idx]<std::size_t... I>(std::integer_sequence<std::size_t, I...>) {
+     &idx]<long long... I>(std::integer_sequence<long long, I...>) {
       (
           [&storage, &idx]() {
             if (EnumR::template isValidIndex<EnumType,
@@ -117,7 +117,7 @@ private:
             }
           }(),
           ...);
-    }(std::make_integer_sequence<std::size_t, rangeSize_ + 1>());
+    }(std::make_integer_sequence<long long, rangeSize_ + 1>());
 
     return storage;
   }
@@ -135,11 +135,11 @@ private:
   static constexpr auto nameData_ = computeEnumData<nameFunc_>();
 
 public:
-  static constexpr EnumType at(std::size_t i) noexcept { return valueData_[i]; }
+  static constexpr EnumType at(long long i) noexcept { return valueData_[i]; }
 
-  static constexpr std::size_t size() noexcept { return valueData_.size(); }
+  static constexpr long long size() noexcept { return valueData_.size(); }
 
-  static constexpr std::string_view nameAt(std::size_t i) noexcept {
+  static constexpr std::string_view nameAt(long long i) noexcept {
     return nameData_[i];
   }
 };
